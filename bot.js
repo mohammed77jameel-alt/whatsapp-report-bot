@@ -1,13 +1,26 @@
 /**
  * whatsapp-report-bot-main/bot.js
  * Elite Cyber Ops Center - Strict Access Control, Role-Based Keyboard & Smart Unban Check
+ * (With HTTP Server Integration for Render Health Checks)
  */
 
 require('dotenv').config();
+const http = require('http');
 const { Telegraf, Markup } = require('telegraf');
 const reportService = require('./services/report-service');
 const emailService = require('./services/email-service');
 const nodemailer = require('nodemailer');
+
+// ==========================================
+// 🌐 خادم HTTP مصغر لتلبية متطلبات Render (Port Binding Fix)
+// ==========================================
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('WhatsApp Cyber Ops Bot is Healthy & Running!\n');
+}).listen(PORT, () => {
+    console.log(`🌐 HTTP Server active on port ${PORT} for Render health checks.`);
+});
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -17,6 +30,14 @@ if (!BOT_TOKEN) {
 }
 
 const bot = new Telegraf(BOT_TOKEN);
+
+// معالجة الأخطاء العامة لضمان عدم انهيار البوت
+bot.catch((err, ctx) => {
+    console.error(`🚨 Error for ${ctx.updateType}:`, err);
+    if (ctx && ctx.reply) {
+        ctx.reply(`⚠️ حدث خطأ أثناء المعالجة: ${err.message}`).catch(() => {});
+    }
+});
 
 // ==========================================
 // 🛡️ المالك الأساسي والمشرفين المعتمدين
@@ -160,12 +181,12 @@ bot.hears('⚡ فحص السيرفرات', async (ctx) => {
     await ctx.reply("⏳ جاري فحص اتصال واختبار استجابة خادم البريد (`Brevo SMTP Relay`)...");
     try {
         const transporter = nodemailer.createTransport({
-            host: 'smtp-relay.brevo.com',
-            port: 587,
+            host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+            port: process.env.SMTP_PORT || 587,
             secure: false,
             auth: {
-                user: 'c11443001@smtp-brevo.com',
-                pass: 'xsmtpsib-8ecf1ac034cd7a8159fd0c53ec37f1b84391425b13872ca572b2e519d253fbde-7yLLjuAsjnhvE2Ox'
+                user: process.env.SMTP_USER || 'c11443001@smtp-brevo.com',
+                pass: process.env.SMTP_PASS || 'xsmtpsib-8ecf1ac034cd7a8159fd0c53ec37f1b84391425b13872ca572b2e519d253fbde-7yLLjuAsjnhvE2Ox'
             }
         });
         await transporter.verify();
@@ -342,12 +363,12 @@ bot.on('text', async (ctx) => {
 
         try {
             const transporter = nodemailer.createTransport({
-                host: 'smtp-relay.brevo.com',
-                port: 587,
+                host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+                port: process.env.SMTP_PORT || 587,
                 secure: false,
                 auth: {
-                    user: 'c11443001@smtp-brevo.com',
-                    pass: 'xsmtpsib-8ecf1ac034cd7a8159fd0c53ec37f1b84391425b13872ca572b2e519d253fbde-7yLLjuAsjnhvE2Ox'
+                    user: process.env.SMTP_USER || 'c11443001@smtp-brevo.com',
+                    pass: process.env.SMTP_PASS || 'xsmtpsib-8ecf1ac034cd7a8159fd0c53ec37f1b84391425b13872ca572b2e519d253fbde-7yLLjuAsjnhvE2Ox'
                 }
             });
 
@@ -360,7 +381,7 @@ bot.on('text', async (ctx) => {
                 const currentText = template.text.replace(/{phone}/g, targetPhone);
 
                 await transporter.sendMail({
-                    from: `"WhatsApp Support Appeals" <c11443001@smtp-brevo.com>`,
+                    from: `"WhatsApp Support Appeals" <${process.env.SMTP_USER || 'c11443001@smtp-brevo.com'}>`,
                     to: `support@whatsapp.net, android_support@whatsapp.net`,
                     subject: currentSubject,
                     html: `<div style="font-family: Arial; padding: 20px;">${currentText.replace(/\n/g, '<br>')}</div>`
