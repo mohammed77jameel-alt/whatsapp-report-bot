@@ -10,6 +10,7 @@
     "backup": "node scripts/backup.js"
   },
   "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.22",
     "axios": "^1.7.0",
     "dotenv": "^16.4.5",
     "nodemailer": "^6.9.13",
