@@ -87,7 +87,7 @@ class RealEmailProvider {
         for (let i = 0; i < count; i++) {
             try {
                 // Add slight variation to each email
-                const uniqueSubject = `${subject} - Report ${i + 1}`;
+                const uniqueSubject = `${subject} Report ${i + 1}`;
                 const uniqueText = this.addVariation(text, i);
                 
                 const result = await this.sendEmail(to, uniqueSubject, uniqueText);
@@ -134,4 +134,4 @@ class RealEmailProvider {
     }
 }
 
-module.exports = RealEmailProvider;
+module.exports = new RealEmailProvider();
