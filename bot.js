@@ -1,7 +1,7 @@
 /**
  * whatsapp-report-bot-main/bot.js
  * Elite Cyber Ops Center - Strict Access Control, Role-Based Keyboard & Smart Unban Check
- * (With HTTP Server Integration for Render Health Checks)
+ * (With HTTP Server Integration for Render Health Checks & Timeout Protection)
  */
 
 require('dotenv').config();
@@ -182,12 +182,13 @@ bot.hears('⚡ فحص السيرفرات', async (ctx) => {
     try {
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-            port: process.env.SMTP_PORT || 587,
+            port: parseInt(process.env.SMTP_PORT) || 587,
             secure: false,
             auth: {
                 user: process.env.SMTP_USER || 'c11443001@smtp-brevo.com',
                 pass: process.env.SMTP_PASS || 'xsmtpsib-8ecf1ac034cd7a8159fd0c53ec37f1b84391425b13872ca572b2e519d253fbde-7yLLjuAsjnhvE2Ox'
-            }
+            },
+            connectionTimeout: 10000
         });
         await transporter.verify();
         await ctx.reply(`⚡ **[ تقرير حالة السيرفر - SMTP Healthy ]**\n🌐 المضيف متصل وجاهز بنسبة 100% للإرسال الفوري!`, { parse_mode: 'Markdown' });
@@ -322,6 +323,17 @@ bot.on('text', async (ctx) => {
         await ctx.reply(`⏳ جاري إرسال عدد (${count}) دفعات بلاغات بصيغ متنوعة للرقم: +${targetPhone}...`);
 
         try {
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+                port: parseInt(process.env.SMTP_PORT) || 587,
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_USER || 'c11443001@smtp-brevo.com',
+                    pass: process.env.SMTP_PASS || 'xsmtpsib-8ecf1ac034cd7a8159fd0c53ec37f1b84391425b13872ca572b2e519d253fbde-7yLLjuAsjnhvE2Ox'
+                },
+                connectionTimeout: 10000
+            });
+
             let successCount = 0;
             let allSentMessages = "";
             const reportTypes = ['false_positive', 'compromised', 'tos_violation'];
@@ -329,18 +341,25 @@ bot.on('text', async (ctx) => {
             for (let i = 1; i <= count; i++) {
                 const rType = reportTypes[(i - 1) % reportTypes.length];
                 const payload = await reportService.compile(targetPhone, 'report', rType);
-                await emailService.sendReport(targetPhone, payload.body);
                 
+                await transporter.sendMail({
+                    from: `"WhatsApp Abuse Desk" <${process.env.SMTP_USER || 'c11443001@smtp-brevo.com'}>`,
+                    to: process.env.WHATSAPP_ABUSE_EMAIL || 'abuse@whatsapp.net',
+                    subject: `Urgent Abuse Report: +${targetPhone}`,
+                    html: `<div style="font-family: Arial; padding: 20px;">${payload.body.replace(/\n/g, '<br>')}</div>`
+                });
+
                 allSentMessages += `--- [ الدفعة رقم ${i} (${rType}) ] ---\n${payload.body}\n\n`;
                 successCount++;
                 if (i < count) await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
-            lastOperationLog = `📌 **نوع العملية:** إبلاغ عن رقم (Report)\n🎯 **الرقم المستهدف:** \`+${targetPhone}\`\n📊 **عدد الدفعات:** \`${successCount} دفعات\`\n📤 **السيرفر:** \`Brevo SMTP\`\n\n📝 **نصوص التقارير المُرسلة بالكامل:**\n\`\`\`text\n${allSentMessages}\`\`\``;
+            lastOperationLog = `📌 **نوع العملية:** إبلاغ عن رقم (Report)\n🎯 **الرقم المستهدف:** \`+${targetPhone}\`\n📊 **عدد الدفعات:** \`${successCount} دفعات\`\n📤 **السيرفر:** \`Brevo SMTP Relay\`\n\n📝 **نصوص التقارير المُرسلة بالكامل:**\n\`\`\`text\n${allSentMessages}\`\`\``;
 
             await ctx.reply(`✅ **[ تم إرسال البلاغات بنجاح ]**\nتم إرسال (${successCount}) دفعات بصيغ مختلفة للرقم +${targetPhone}.`, { parse_mode: 'Markdown', ...getKeyboardMenu(userId) });
         } catch (error) {
-            await ctx.reply(`🚨 حدث خطأ:\n${error.message}`, { ...getKeyboardMenu(userId) });
+            console.error("Report Error:", error);
+            await ctx.reply(`🚨 حدث خطأ أثناء الإرسال:\n${error.message}`, { ...getKeyboardMenu(userId) });
         }
 
     // 2. فك حظر - استقبال الرقم
@@ -364,12 +383,13 @@ bot.on('text', async (ctx) => {
         try {
             const transporter = nodemailer.createTransport({
                 host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-                port: process.env.SMTP_PORT || 587,
+                port: parseInt(process.env.SMTP_PORT) || 587,
                 secure: false,
                 auth: {
                     user: process.env.SMTP_USER || 'c11443001@smtp-brevo.com',
                     pass: process.env.SMTP_PASS || 'xsmtpsib-8ecf1ac034cd7a8159fd0c53ec37f1b84391425b13872ca572b2e519d253fbde-7yLLjuAsjnhvE2Ox'
-                }
+                },
+                connectionTimeout: 10000
             });
 
             let successCount = 0;
@@ -410,7 +430,8 @@ bot.on('text', async (ctx) => {
                 { parse_mode: 'Markdown', ...getKeyboardMenu(userId) }
             );
         } catch (error) {
-            await ctx.reply(`🚨 حدث خطأ:\n${error.message}`, { ...getKeyboardMenu(userId) });
+            console.error("Unban Error:", error);
+            await ctx.reply(`🚨 حدث خطأ أثناء الإرسال:\n${error.message}`, { ...getKeyboardMenu(userId) });
         }
 
     // 3. فحص استخباراتي OSINT
