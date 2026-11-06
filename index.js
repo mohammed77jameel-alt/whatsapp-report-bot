@@ -1,14 +1,7 @@
-/**
- * whatsapp-report-bot-main/index.js
- * DIVINE DESIGN ARCHITECTURE: Fluent Asynchronous Lifecycle Pipeline
- * 
- * Elegant, linear execution flow with unified fault containment boundaries.
- */
-
-const config = require('./config');[cite: 1]
-const reportService = require('./services/report-service');[cite: 1]
-const emailService = require('./services/email-service');[cite: 1]
-const telegramService = require('./services/telegram-service');[cite: 1]
+const config = require('./config.js');
+const reportService = require('./services/report-service.js');
+const emailService = require('./services/email-service.js');
+const telegramService = require('./services/telegram-service.js');
 
 class DivineEnginePipeline {
     constructor() {
@@ -21,9 +14,6 @@ class DivineEnginePipeline {
         };
     }
 
-    /**
-     * Orchestrates the runtime sequence via elegant, chainable transitions
-     */
     async awaken() {
         try {
             this.validateScope()
@@ -40,9 +30,6 @@ class DivineEnginePipeline {
         }
     }
 
-    /**
-     * Phase 1: Input Validation Boundary
-     */
     validateScope() {
         const { action, target } = this.context;
         const validActions = ['report', 'unban'];
@@ -57,9 +44,6 @@ class DivineEnginePipeline {
         return this;
     }
 
-    /**
-     * Phase 2: Observability Preamble
-     */
     logInitialization() {
         console.log(`\n🌌 [ENGAGING COGNITION ENGINE]`);
         console.log(`▫️ Operational Strategy : ${this.context.action.toUpperCase()}`);
@@ -71,60 +55,40 @@ class DivineEnginePipeline {
         return this;
     }
 
-    /**
-     * Phase 3: Polymorphic Semantic Tree Synthesis
-     */
     async synthesizePayload() {
         const { action, target, nuance } = this.context;
         console.log(`🔮 [1/4] Generating unique semantic document structure...`);
-        
-        // Strategy routing dynamically applied via unified report service endpoint
-        this.context.payload = await reportService.compile(target, action, nuance);[cite: 1]
+        this.context.payload = await reportService.compile(target, action, nuance);
     }
 
-    /**
-     * Phase 4: Chronos Entropy Delay (Human Emulation)
-     */
     async enforceStealthSync() {
-        const { minDelay, maxDelay } = config.stealth;[cite: 1]
+        const { minDelay, maxDelay } = config.stealth;
         const delayDuration = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
         
         console.log(`⏳ [2/4] Injecting ${delayDuration}ms of artificial temporal entropy...`);
         await new Promise(resolve => setTimeout(resolve, delayDuration));
     }
 
-    /**
-     * Phase 5: Outbound Transport Layer Routing
-     */
     async dispatchTransport() {
         console.log(`🚀 [3/4] Transmitting encrypted matrix packet over SMTP transport...`);
-        // Uses the load-balancing email delivery broker[cite: 1]
-        await emailService.sendReport(this.context.target, this.context.payload.body);[cite: 1]
+        await emailService.sendReport(this.context.target, this.context.payload.body);
     }
 
-    /**
-     * Phase 6: Telemetry Broadcast Interface
-     */
     async syncTelemetry() {
         console.log(`📡 [4/4] Broadcasting runtime metrics to cloud telemetry nodes...`);
-        await telegramService.sendLiveDashboard({[cite: 1]
-            activeNodes: config.engine.concurrency,[cite: 1]
+        await telegramService.sendLiveDashboard({
+            activeNodes: config.engine.concurrency,
             successRate: "100%"
         });
     }
 
-    /**
-     * Absolute Boundary Fault Containment
-     */
     async handleSystemFault(fault) {
         const errorSignature = `[CRITICAL_PIPELINE_FAULT] -> ${fault.message}`;
         console.error(`\n🚨 ${errorSignature}\n`);
         
-        // Graceful telemetry alert dispatch fallback to protect session persistence[cite: 1]
-        await telegramService.logAlert(`Engine Interruption on Action [${this.context.action?.toUpperCase()}]: ${fault.message}`);[cite: 1]
+        await telegramService.logAlert(`Engine Interruption on Action [${this.context.action?.toUpperCase()}]: ${fault.message}`);
     }
 }
 
-// Instantiate and ignite the pipeline
 const pipeline = new DivineEnginePipeline();
 pipeline.awaken();

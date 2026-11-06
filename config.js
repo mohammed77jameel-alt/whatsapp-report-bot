@@ -17,6 +17,12 @@ const configurationMatrix = {
         maxDelay: parseInt(process.env.MAX_DELAY_MS, 10) || 5000,
         rotateFootprints: true
     },
+    smtp: {
+        host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+        port: parseInt(process.env.SMTP_PORT, 10) || 587,
+        user: process.env.SMTP_USER || process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASS || process.env.SMTP_PASSWORD
+    },
     targets: {
         abuseEmail: process.env.WHATSAPP_ABUSE_EMAIL || "abuse@whatsapp.net",
         supportEmail: process.env.WHATSAPP_SUPPORT_EMAIL || "support@whatsapp.net"
