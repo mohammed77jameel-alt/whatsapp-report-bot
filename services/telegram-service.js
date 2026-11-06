@@ -1,14 +1,9 @@
-/**
- * whatsapp-report-bot-main/services/telegram-service.js
- * MASTER ARCHITECTURE: Non-Blocking Telemetry Ingestion Bridge
- */
-
 const axios = require('axios');
-const config = require('../config');[cite: 1]
+const config = require('../config.js');
 
 class TelegramService {
     constructor() {
-        this.endpoint = `${config.telegram.apiBase}/sendMessage`;[cite: 1]
+        this.endpoint = `${config.telegram.apiBase}/sendMessage`;
     }
 
     async sendLiveDashboard(telemetry) {
@@ -28,10 +23,10 @@ class TelegramService {
     }
 
     fireAndForget(payloadText) {
-        if (!config.telegram.token || !config.telegram.chatId) return;[cite: 1]
+        if (!config.telegram.token || !config.telegram.chatId) return;
         
         axios.post(this.endpoint, {
-            chat_id: config.telegram.chatId,[cite: 1]
+            chat_id: config.telegram.chatId,
             text: payloadText,
             parse_mode: 'Markdown'
         }).catch(err => console.error(`[Telemetry Drop]: ${err.message}`));

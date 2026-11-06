@@ -1,42 +1,43 @@
 /**
  * whatsapp-report-bot-main/services/email-service.js
- * MASTER ARCHITECTURE: Transporter Broker & Dynamic Rotation Broker
+ * SMTP Transport & Dispatch Engine (Hardcoded Direct Fix)
  */
 
-const config = require('../config');[cite: 1]
-const realEmailProvider = require('../providers/real-email-provider');[cite: 1]
+const nodemailer = require('nodemailer');
 
 class EmailService {
     constructor() {
-        // Pool layout for horizontal transport scaling
-        this.fallbackNodes = JSON.parse(process.env.SMTP_POOL_JSON || '[]');
-        this.nodeIndex = 0;
+        // تعبئة البيانات مباشرة لضمان عدم ظهور أي خطأ في الاعتماديات
+        this.smtpUser = 'c11443001@smtp-brevo.com';
+        this.smtpPass = 'xsmtpsib-8ecf1ac034cd7a8159fd0c53ec37f1b84391425b13872ca572b2e519d253fbde-7yLLjuAsjnhvE2Ox';
+        this.smtpHost = 'smtp-relay.brevo.com';
+        this.smtpPort = 587;
+
+        this.transporter = nodemailer.createTransport({
+            host: this.smtpHost,
+            port: this.smtpPort,
+            secure: false,
+            auth: {
+                user: this.smtpUser,
+                pass: this.smtpPass
+            }
+        });
     }
 
-    async sendReport(target, finalizedBody) {
-        const activeNode = this.resolveActiveNode();
-        
-        const manifest = {
-            recipient: config.targets.abuseEmail,
-            subject: `Incident-Enforcement // ID: ${Math.floor(Math.random() * 100000)}`,
-            body: finalizedBody
-        };
-
-        return realEmailProvider.sendSecureMail(activeNode, manifest);[cite: 1]
-    }
-
-    resolveActiveNode() {
-        if (this.fallbackNodes.length === 0) {
-            // Hot-swap backup node deployment pattern
-            return {
-                host: process.env.SMTP_HOST || 'localhost',
-                port: parseInt(process.env.SMTP_PORT, 10) || 587,
-                auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    async sendReport(targetPhone, htmlContent) {
+        try {
+            const mailOptions = {
+                from: `"Security Operations Desk" <${this.smtpUser}>`,
+                to: `abuse@whatsapp.net, support@whatsapp.net`,
+                subject: `Urgent Report Regarding WhatsApp Account: +${targetPhone}`,
+                html: htmlContent
             };
+
+            const info = await this.transporter.sendMail(mailOptions);
+            return { success: true, messageId: info.messageId };
+        } catch (error) {
+            throw new Error(`SMTP Transmission Failed: ${error.message}`);
         }
-        const selected = this.fallbackNodes[this.nodeIndex];
-        this.nodeIndex = (this.nodeIndex + 1) % this.fallbackNodes.length;
-        return selected;
     }
 }
 
