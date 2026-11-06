@@ -2,14 +2,15 @@
   "name": "whatsapp-report-bot-engine",
   "version": "4.0.0",
   "description": "Master-Tier Asynchronous Strategy Engine for Enforcement and Recovery",
-  "main": "index.js",
+  "main": "bot.js",
   "scripts": {
     "setup": "node setup.js",
-    "start": "node index.js",
+    "start": "node bot.js",
     "stats": "node scripts/stats.js",
     "backup": "node scripts/backup.js"
   },
   "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.22",
     "axios": "^1.7.0",
     "dotenv": "^16.4.5",
     "nodemailer": "^6.9.13",
