@@ -1,13 +1,12 @@
 /**
  * whatsapp-report-bot-main/services/email-service.js
- * SMTP Transport & Dispatch Engine (Hardcoded Direct Fix)
+ * SMTP Transport & Dispatch Engine (Direct Hardcoded Fix)
  */
 
 const nodemailer = require('nodemailer');
 
 class EmailService {
     constructor() {
-        // تعبئة البيانات مباشرة لضمان عدم ظهور أي خطأ في الاعتماديات
         this.smtpUser = 'c11443001@smtp-brevo.com';
         this.smtpPass = 'xsmtpsib-8ecf1ac034cd7a8159fd0c53ec37f1b84391425b13872ca572b2e519d253fbde-7yLLjuAsjnhvE2Ox';
         this.smtpHost = 'smtp-relay.brevo.com';
