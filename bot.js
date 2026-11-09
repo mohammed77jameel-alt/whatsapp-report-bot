@@ -421,8 +421,10 @@ bot.on('text', async (ctx) => {
     }
 });
 
-// التشغيل
-bot.launch().then(() => {
+// التشغيل (مع تفعيل خاصية تجاهل التحديثات المعلقة لمنع خطأ 409 Conflict)
+bot.launch({
+    dropPendingUpdates: true
+}).then(() => {
     console.log("🔥 Secure Cyber Ops Center Bot with Strict Access & Status Report is active...");
 });
 
