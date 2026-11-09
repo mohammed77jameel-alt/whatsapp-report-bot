@@ -1,6 +1,6 @@
 /**
  * whatsapp-report-bot-main/services/email-service.js
- * SMTP Transport & Dispatch Engine (Hardcoded Direct Fix)
+ * SMTP Transport & Dispatch Engine (Optimized & Timeout-Protected Fix)
  */
 
 const nodemailer = require('nodemailer');
@@ -17,10 +17,15 @@ class EmailService {
             host: this.smtpHost,
             port: this.smtpPort,
             secure: false,
+            requireTLS: true,
             auth: {
                 user: this.smtpUser,
                 pass: this.smtpPass
-            }
+            },
+            // إعدادات حماية وتحديد أوقات الانتظار لمنع تعليق السيرفر (Timeout) نهائياً
+            connectionTimeout: 10000, // 10 ثوانٍ كحد أقصى لمحاولة الاتصال
+            greetingTimeout: 10000,   // 10 ثوانٍ لانتظار رد خادم Brevo
+            socketTimeout: 15000      // 15 ثانية كحد أقصى لنشاط الـ Socket
         });
     }
 
